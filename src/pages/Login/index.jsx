@@ -1,10 +1,11 @@
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Alert, message, Tabs } from 'antd';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProFormCheckbox, ProFormText, LoginForm } from '@ant-design/pro-form';
 import { useIntl, history, FormattedMessage, SelectLang, useModel } from 'umi';
-import Footer from '@/components/Footer';
 import { login } from '@/services/ant-design-pro/api';
+import { connect } from 'umi';
+
 import styles from './index.less';
 
 const LoginMessage = ({ content }) => (
@@ -18,15 +19,21 @@ const LoginMessage = ({ content }) => (
   />
 );
 
-const Login = () => {
+const Login = (props) => {
   const [userLoginState, setUserLoginState] = useState({});
-  const [type, setType] = useState('account');
   const { initialState, setInitialState } = useModel('@@initialState');
   const intl = useIntl();
 
+  useEffect(() => {
+    // 如果已经登录去首页
+    console.log(initialState);
+    if (initialState.currentUser) {
+      history.replace('/');
+    }
+  }, []);
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
-
+    console.log(userInfo);
     if (userInfo) {
       await setInitialState((s) => ({ ...s, currentUser: userInfo }));
     }
@@ -34,8 +41,12 @@ const Login = () => {
 
   const handleSubmit = async (values) => {
     try {
+      props.dispatch({
+        type: 'login/fetchLogin',
+        payload: values,
+      });
       // 登录
-      const msg = await login({ ...values, type });
+      const msg = await login({ ...values });
 
       if (msg.status === 'ok') {
         const defaultLoginSuccessMessage = intl.formatMessage({
@@ -49,7 +60,6 @@ const Login = () => {
         if (!history) return;
         const { query } = history.location;
         const { redirect } = query;
-        console.log(redirect);
         history.push(redirect || '/');
         return;
       }
@@ -83,11 +93,12 @@ const Login = () => {
             autoLogin: true,
           }}
           actions={[]}
+          // 收集表单输入数据
           onFinish={async (values) => {
             await handleSubmit(values);
           }}
         >
-          <Tabs activeKey={type} onChange={setType}>
+          <Tabs activeKey={'account'}>
             <Tabs.TabPane
               key="account"
               tab={intl.formatMessage({
@@ -105,54 +116,52 @@ const Login = () => {
               })}
             />
           )}
-          {type === 'account' && (
-            <>
-              <ProFormText
-                name="username"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <UserOutlined className={styles.prefixIcon} />,
-                }}
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.username.placeholder',
-                  defaultMessage: '用户名: admin or user',
-                })}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.username.required"
-                        defaultMessage="请输入用户名!"
-                      />
-                    ),
-                  },
-                ]}
-              />
-              <ProFormText.Password
-                name="password"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <LockOutlined className={styles.prefixIcon} />,
-                }}
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.password.placeholder',
-                  defaultMessage: '密码: ant.design',
-                })}
-                rules={[
-                  {
-                    required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.password.required"
-                        defaultMessage="请输入密码！"
-                      />
-                    ),
-                  },
-                ]}
-              />
-            </>
-          )}
+          <>
+            <ProFormText
+              name="username"
+              fieldProps={{
+                size: 'large',
+                prefix: <UserOutlined className={styles.prefixIcon} />,
+              }}
+              placeholder={intl.formatMessage({
+                id: 'pages.login.username.placeholder',
+                defaultMessage: '用户名: admin or user',
+              })}
+              rules={[
+                {
+                  required: true,
+                  message: (
+                    <FormattedMessage
+                      id="pages.login.username.required"
+                      defaultMessage="请输入用户名!"
+                    />
+                  ),
+                },
+              ]}
+            />
+            <ProFormText.Password
+              name="password"
+              fieldProps={{
+                size: 'large',
+                prefix: <LockOutlined className={styles.prefixIcon} />,
+              }}
+              placeholder={intl.formatMessage({
+                id: 'pages.login.password.placeholder',
+                defaultMessage: '密码: ant.design',
+              })}
+              rules={[
+                {
+                  required: true,
+                  message: (
+                    <FormattedMessage
+                      id="pages.login.password.required"
+                      defaultMessage="请输入密码！"
+                    />
+                  ),
+                },
+              ]}
+            />
+          </>
 
           <div
             style={{
@@ -176,4 +185,6 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default connect(({ login }) => {
+  response: login.response;
+})(Login);

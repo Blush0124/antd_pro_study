@@ -1,8 +1,8 @@
 /*
  * @Author: your name
  * @Date: 2022-04-27 15:46:07
- * @LastEditTime: 2022-04-29 09:13:39
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-05-05 15:34:02
+ * @LastEditors: Blush0124 848415857@qq.com
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: \cydt-chz\src\components\RightContent\AvatarDropdown.jsx
  */
@@ -13,7 +13,7 @@ import {
   UserOutlined,
   UnorderedListOutlined,
 } from '@ant-design/icons';
-import { Avatar, Menu, Spin, Badge } from 'antd';
+import { Avatar, Menu, Spin, Badge, message } from 'antd';
 import { history, useModel } from 'umi';
 import { stringify } from 'querystring';
 import HeaderDropdown from '../HeaderDropdown';
@@ -25,18 +25,21 @@ import { connect } from 'umi';
  * 退出登录，并且将当前的 url 保存
  */
 const loginOut = async () => {
+  // loading
+  const load = message.loading('退出中...');
   await outLogin();
   const { query = {}, search, pathname } = history.location;
   const { redirect } = query; // Note: There may be security issues, please note
 
-  if (window.location.pathname !== '/user/login' && !redirect) {
+  if (window.location.pathname !== '/login' && !redirect) {
     history.replace({
-      pathname: '/user/login',
+      pathname: '/login',
       search: stringify({
         redirect: pathname + search,
       }),
     });
   }
+  load.hide();
 };
 
 const AvatarDropdown = ({ menu, todos, dispatch }) => {

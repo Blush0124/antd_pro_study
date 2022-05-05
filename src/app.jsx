@@ -1,21 +1,18 @@
 /*
  * @Author: your name
  * @Date: 2022-04-27 15:46:07
- * @LastEditTime: 2022-04-29 15:24:27
- * @LastEditors: Please set LastEditors
+ * @LastEditTime: 2022-05-05 15:26:45
+ * @LastEditors: Blush0124 848415857@qq.com
  * @Description: 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  * @FilePath: \cydt-chz\src\app.jsx
  */
-import { SettingDrawer } from '@ant-design/pro-layout';
 import { PageLoading } from '@ant-design/pro-layout';
 import { history, Link } from 'umi';
 import RightContent from '@/components/RightContent';
-import Footer from '@/components/Footer';
 import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
-import { BookOutlined, LinkOutlined } from '@ant-design/icons';
 import defaultSettings from '../config/defaultSettings';
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = '/user/login';
+const loginPath = '/login';
 /** 获取用户信息比较慢的时候会展示一个 loading */
 
 export const initialStateConfig = {
@@ -35,21 +32,22 @@ export async function getInitialState() {
     }
 
     return undefined;
-  }; // 如果不是登录页面，执行
+  };
+  // 如果不是登录页面，执行
 
-  if (history.location.pathname !== loginPath) {
-    const currentUser = await fetchUserInfo();
-    return {
-      fetchUserInfo,
-      currentUser,
-      settings: defaultSettings,
-    };
-  }
-
+  // if (history.location.pathname !== loginPath) {
+  const currentUser = await fetchUserInfo();
   return {
     fetchUserInfo,
+    currentUser,
     settings: defaultSettings,
   };
+  // }
+
+  /* return {
+    fetchUserInfo,
+    settings: defaultSettings,
+  }; */
 } // ProLayout 支持的api https://procomponents.ant.design/components/layout
 
 export const layout = ({ initialState, setInitialState }) => {
